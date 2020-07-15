@@ -16,6 +16,8 @@ func getClient() (*Client, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		// TODO: we need some locking here
 		defaultClient.c = c
 	}
 	return defaultClient.c, nil
