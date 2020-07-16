@@ -46,4 +46,25 @@ func TestSingleton(t *testing.T) {
 
 	_, err = Get("test")
 	assert.Equal(t, ErrNotFound, err)
+
+	// listing keys
+	for i := 0; i < 50; i++ {
+		err = Set(fmt.Sprintf("test-%02d", i), "value")
+		assert.NoError(t, err)
+	}
+	for i := 0; i < 50; i++ {
+		val, err = Get(fmt.Sprintf("test-%02d", i))
+		assert.NoError(t, err)
+		assert.Equal(t, "value", val)
+	}
+	keys, err := ListKeys("test")
+	assert.NoError(t, err)
+	assert.Len(t, keys, 50)
+	for i := 0; i < 50; i++ {
+		assert.Equal(t, fmt.Sprintf("test-%02d", i), keys[i])
+	}
+	for i := 0; i < 50; i++ {
+		err = Delete(fmt.Sprintf("test-%02d", i))
+		assert.NoError(t, err)
+	}
 }
