@@ -5,36 +5,37 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func getJWT() (string, error) {
-	req, err := http.NewRequest("GET", "https://database-test-jwt.kochman.repl.co", nil)
-	if err != nil {
-		return "", err
-	}
-	req.SetBasicAuth("test", os.Getenv("PASSWORD"))
-	resp, err := http.DefaultClient.Do(req)
-	if resp.StatusCode != 200 {
-		return "", fmt.Errorf("unexpected status code %d", resp.StatusCode)
-	}
-	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
+var setup sync.Once
+
+func setDBURL(t *testing.T) {
+	setup.Do(func() {
+		req, err := http.NewRequest("GET", "https://database-test-jwt.kochman.repl.co", nil)
+		assert.NoError(t, err)
+
+		req.SetBasicAuth("test", os.Getenv("PASSWORD"))
+		resp, err := http.DefaultClient.Do(req)
+		assert.NoError(t, err)
+		assert.Equal(t, 200, resp.StatusCode)
+		defer resp.Body.Close()
+
+		b, err := ioutil.ReadAll(resp.Body)
+		assert.NoError(t, err)
+
+		err = os.Setenv("REPLIT_DB_URL", string(b))
+		assert.NoError(t, err)
+	})
 }
 
 func TestSingleton(t *testing.T) {
-	jwt, err := getJWT()
-	assert.NoError(t, err)
-	err = os.Setenv("REPLIT_DB_URL", jwt)
-	assert.NoError(t, err)
+	setDBURL(t)
 
-	err = Set("test", "value")
+	err := Set("test", "value")
 	assert.NoError(t, err)
 
 	val, err := Get("test")

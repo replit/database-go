@@ -1,4 +1,4 @@
 
 .PHONY: test
 test:
-	go test -v -race github.com/replit/database-go
+	go test -v -race -cover github.com/replit/database-go
