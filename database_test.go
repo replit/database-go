@@ -33,39 +33,41 @@ func setDBURL(t *testing.T) {
 }
 
 func TestSingleton(t *testing.T) {
+	t.Parallel()
 	setDBURL(t)
+	const prefix = "test-singleton-"
 
-	err := Set("test", "value")
+	err := Set(prefix+"test", "value")
 	assert.NoError(t, err)
 
-	val, err := Get("test")
+	val, err := Get(prefix + "test")
 	assert.NoError(t, err)
 	assert.Equal(t, "value", val)
 
-	err = Delete("test")
+	err = Delete(prefix + "test")
 	assert.NoError(t, err)
 
-	_, err = Get("test")
+	_, err = Get(prefix + "test")
 	assert.Equal(t, ErrNotFound, err)
 
 	// listing keys
 	for i := 0; i < 50; i++ {
-		err = Set(fmt.Sprintf("test-%02d", i), "value")
+		err = Set(fmt.Sprintf("%stest-%02d", prefix, i), "value")
 		assert.NoError(t, err)
 	}
 	for i := 0; i < 50; i++ {
-		val, err = Get(fmt.Sprintf("test-%02d", i))
+		val, err = Get(fmt.Sprintf("%stest-%02d", prefix, i))
 		assert.NoError(t, err)
 		assert.Equal(t, "value", val)
 	}
-	keys, err := ListKeys("test")
+	keys, err := ListKeys(prefix + "test")
 	assert.NoError(t, err)
 	assert.Len(t, keys, 50)
 	for i := 0; i < 50; i++ {
-		assert.Equal(t, fmt.Sprintf("test-%02d", i), keys[i])
+		assert.Equal(t, fmt.Sprintf("%stest-%02d", prefix, i), keys[i])
 	}
 	for i := 0; i < 50; i++ {
-		err = Delete(fmt.Sprintf("test-%02d", i))
+		err = Delete(fmt.Sprintf("%stest-%02d", prefix, i))
 		assert.NoError(t, err)
 	}
 }
