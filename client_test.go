@@ -13,7 +13,7 @@ func TestJSON(t *testing.T) {
 	setDBURL(t)
 	const prefix = "test-json-"
 
-	c, err := NewClient()
+	c, err := newClient()
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 
@@ -39,7 +39,7 @@ func TestReader(t *testing.T) {
 	setDBURL(t)
 	const prefix = "test-reader-"
 
-	c, err := NewClient()
+	c, err := newClient()
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 
@@ -61,7 +61,7 @@ func TestReader(t *testing.T) {
 }
 
 func ExampleClient() {
-	c, _ := NewClient()
+	c, _ := newClient()
 
 	c.Set("key", "value")
 	val, _ := c.Get("key")

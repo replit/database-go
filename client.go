@@ -16,16 +16,16 @@ import (
 // ErrNotFound indicates that the requested key does not exist.
 var ErrNotFound = errors.New("not found")
 
-// Client interacts with Repl.it Database. You can use it to get, set, delete,
+// client interacts with Repl.it Database. You can use it to get, set, delete,
 // and list keys and their values.
-type Client struct {
+type client struct {
 	baseURL    *url.URL
 	httpClient *http.Client
 }
 
 // Get returns the value for the provided key. It returns ErrNotFound if the key
 // does not exist.
-func (c *Client) Get(k string) (string, error) {
+func (c *client) Get(k string) (string, error) {
 	body, err := c.GetReader(k)
 	if err != nil {
 		return "", err
@@ -42,7 +42,7 @@ func (c *Client) Get(k string) (string, error) {
 
 // GetJSON creates or updates the provided key with the JSON serialization of
 // the provided value.
-func (c *Client) GetJSON(k string, v interface{}) error {
+func (c *client) GetJSON(k string, v interface{}) error {
 	body, err := c.GetReader(k)
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func (c *Client) GetJSON(k string, v interface{}) error {
 
 // GetReader returns an io.ReadCloser for the value of the provided key. It
 // returns ErrNotFound if the key does not exist. Callers must close the reader.
-func (c *Client) GetReader(k string) (io.ReadCloser, error) {
+func (c *client) GetReader(k string) (io.ReadCloser, error) {
 	rel := &url.URL{Path: c.baseURL.Path + "/" + k}
 	u := c.baseURL.ResolveReference(rel).String()
 
@@ -88,7 +88,7 @@ func (c *Client) GetReader(k string) (io.ReadCloser, error) {
 
 // SetJSON creates or updates the provided key with the JSON serialization of
 // the provided value.
-func (c *Client) SetJSON(k string, v interface{}) error {
+func (c *client) SetJSON(k string, v interface{}) error {
 	vb, err := json.Marshal(&v)
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func (c *Client) SetJSON(k string, v interface{}) error {
 }
 
 // Set creates or updates the provided key with the provided value.
-func (c *Client) Set(k string, v string) error {
+func (c *client) Set(k string, v string) error {
 	rel := &url.URL{Path: c.baseURL.Path + "/" + k}
 	u := c.baseURL.ResolveReference(rel)
 
@@ -131,7 +131,7 @@ func (c *Client) Set(k string, v string) error {
 
 // Delete removes the provided key from the database. No error is returned if
 // the key does not exist.
-func (c *Client) Delete(k string) error {
+func (c *client) Delete(k string) error {
 	rel := &url.URL{Path: c.baseURL.Path + "/" + k}
 	url := c.baseURL.ResolveReference(rel).String()
 	req, err := http.NewRequest("DELETE", url, nil)
@@ -161,7 +161,7 @@ func (c *Client) Delete(k string) error {
 // ListKeys returns a slice of all keys that begin with the provided prefix. It
 // returns an empty slice if no keys match. The returned keys are sorted in
 // lexicographic (string) order.
-func (c *Client) ListKeys(prefix string) ([]string, error) {
+func (c *client) ListKeys(prefix string) ([]string, error) {
 	rel := &url.URL{Path: c.baseURL.Path, RawQuery: "prefix=" + prefix}
 	url := c.baseURL.ResolveReference(rel).String()
 
@@ -196,10 +196,10 @@ func (c *Client) ListKeys(prefix string) ([]string, error) {
 	return keys, nil
 }
 
-// NewClient returns a Client configured to use the database that is associated
+// newClient returns a Client configured to use the database that is associated
 // with the repl that it is running within. It does this by reading
 // REPLIT_DB_URL from the environment.
-func NewClient() (*Client, error) {
+func newClient() (*client, error) {
 	urlStr, ok := os.LookupEnv("REPLIT_DB_URL")
 	if !ok {
 		return nil, fmt.Errorf("REPLIT_DB_URL not set in environment")
@@ -207,13 +207,13 @@ func NewClient() (*Client, error) {
 	return newClientWithCustomURL(urlStr)
 }
 
-func newClientWithCustomURL(urlStr string) (*Client, error) {
+func newClientWithCustomURL(urlStr string) (*client, error) {
 	u, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, err
 	}
 
-	c := &Client{
+	c := &client{
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
 		},

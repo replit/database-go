@@ -1,9 +1,5 @@
 // Package database provides methods for interacting with Repl.it Database.
 // It just works if used within a repl.
-//
-// There are two ways to use this package. The simplest is to use the top-level
-// methods without creating your own client. If you want to use the more
-// advanced methods, you can instantiate a client with NewClient().
 package database
 
 import (
@@ -12,13 +8,13 @@ import (
 
 var defaultClient = struct {
 	sync.RWMutex
-	c *Client
+	c *client
 	o sync.Once
 }{}
 
-func getClient() (*Client, error) {
+func getClient() (*client, error) {
 	if defaultClient.c == nil {
-		c, err := NewClient()
+		c, err := newClient()
 		if err != nil {
 			return nil, err
 		}
