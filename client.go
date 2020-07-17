@@ -13,13 +13,18 @@ import (
 	"time"
 )
 
+// ErrNotFound indicates that the requested key does not exist.
 var ErrNotFound = errors.New("not found")
 
+// Client interacts with Repl.it Database. You can use it to get, set, delete,
+// and list keys and their values.
 type Client struct {
-	BaseURL    *url.URL
+	baseURL    *url.URL
 	httpClient *http.Client
 }
 
+// Get returns the value for the provided key. It returns ErrNotFound if the key
+// does not exist.
 func (c *Client) Get(k string) (string, error) {
 	body, err := c.GetReader(k)
 	if err != nil {
@@ -35,6 +40,8 @@ func (c *Client) Get(k string) (string, error) {
 	return string(reader), nil
 }
 
+// GetJSON creates or updates the provided key with the JSON serialization of
+// the provided value.
 func (c *Client) GetJSON(k string, v interface{}) error {
 	body, err := c.GetReader(k)
 	if err != nil {
@@ -45,9 +52,11 @@ func (c *Client) GetJSON(k string, v interface{}) error {
 	return json.NewDecoder(body).Decode(&v)
 }
 
+// GetReader returns an io.ReadCloser for the value of the provided key. It
+// returns ErrNotFound if the key does not exist. Callers must close the reader.
 func (c *Client) GetReader(k string) (io.ReadCloser, error) {
-	rel := &url.URL{Path: c.BaseURL.Path + "/" + k}
-	u := c.BaseURL.ResolveReference(rel).String()
+	rel := &url.URL{Path: c.baseURL.Path + "/" + k}
+	u := c.baseURL.ResolveReference(rel).String()
 
 	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {
@@ -77,6 +86,8 @@ func (c *Client) GetReader(k string) (io.ReadCloser, error) {
 	return nil, fmt.Errorf(resp.Status, string(reader))
 }
 
+// SetJSON creates or updates the provided key with the JSON serialization of
+// the provided value.
 func (c *Client) SetJSON(k string, v interface{}) error {
 	vb, err := json.Marshal(&v)
 	if err != nil {
@@ -86,9 +97,10 @@ func (c *Client) SetJSON(k string, v interface{}) error {
 	return c.Set(k, string(vb))
 }
 
+// Set creates or updates the provided key with the provided value.
 func (c *Client) Set(k string, v string) error {
-	rel := &url.URL{Path: c.BaseURL.Path + "/" + k}
-	u := c.BaseURL.ResolveReference(rel)
+	rel := &url.URL{Path: c.baseURL.Path + "/" + k}
+	u := c.baseURL.ResolveReference(rel)
 
 	data := url.Values{}
 	data.Set(k, v)
@@ -117,9 +129,11 @@ func (c *Client) Set(k string, v string) error {
 	return nil
 }
 
+// Delete removes the provided key from the database. No error is returned if
+// the key does not exist.
 func (c *Client) Delete(k string) error {
-	rel := &url.URL{Path: c.BaseURL.Path + "/" + k}
-	url := c.BaseURL.ResolveReference(rel).String()
+	rel := &url.URL{Path: c.baseURL.Path + "/" + k}
+	url := c.baseURL.ResolveReference(rel).String()
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
 		return err
@@ -144,9 +158,12 @@ func (c *Client) Delete(k string) error {
 	return fmt.Errorf(resp.Status, string(reader))
 }
 
+// ListKeys returns a slice of all keys that begin with the provided prefix. It
+// returns an empty slice if no keys match. The returned keys are sorted in
+// lexicographic (string) order.
 func (c *Client) ListKeys(prefix string) ([]string, error) {
-	rel := &url.URL{Path: c.BaseURL.Path, RawQuery: "prefix=" + prefix}
-	url := c.BaseURL.ResolveReference(rel).String()
+	rel := &url.URL{Path: c.baseURL.Path, RawQuery: "prefix=" + prefix}
+	url := c.baseURL.ResolveReference(rel).String()
 
 	var keys []string
 
@@ -179,15 +196,18 @@ func (c *Client) ListKeys(prefix string) ([]string, error) {
 	return keys, nil
 }
 
+// NewClient returns a Client configured to use the database that is associated
+// with the repl that it is running within. It does this by reading
+// REPLIT_DB_URL from the environment.
 func NewClient() (*Client, error) {
 	urlStr, ok := os.LookupEnv("REPLIT_DB_URL")
 	if !ok {
 		return nil, fmt.Errorf("REPLIT_DB_URL not set in environment")
 	}
-	return NewClientWithCustomUrl(urlStr)
+	return newClientWithCustomURL(urlStr)
 }
 
-func NewClientWithCustomUrl(urlStr string) (*Client, error) {
+func newClientWithCustomURL(urlStr string) (*Client, error) {
 	u, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, err
@@ -197,7 +217,7 @@ func NewClientWithCustomUrl(urlStr string) (*Client, error) {
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
 		},
-		BaseURL: u,
+		baseURL: u,
 	}
 
 	return c, nil

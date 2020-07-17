@@ -1,3 +1,9 @@
+// Package database provides methods for interacting with Repl.it Database.
+// It just works if used within a repl.
+//
+// There are two ways to use this package. The simplest is to use the top-level
+// methods without creating your own client. If you want to use the more
+// advanced methods, you can instantiate a client with NewClient().
 package database
 
 import (
@@ -23,6 +29,8 @@ func getClient() (*Client, error) {
 	return defaultClient.c, nil
 }
 
+// Get returns the value for the provided key. It returns ErrNotFound if the key
+// does not exist.
 func Get(key string) (string, error) {
 	c, err := getClient()
 	if err != nil {
@@ -32,6 +40,7 @@ func Get(key string) (string, error) {
 	return c.Get(key)
 }
 
+// Set creates or updates the provided key with the provided value.
 func Set(key, value string) error {
 	c, err := getClient()
 	if err != nil {
@@ -41,6 +50,7 @@ func Set(key, value string) error {
 	return c.Set(key, value)
 }
 
+// Delete removes the provided key.
 func Delete(key string) error {
 	c, err := getClient()
 	if err != nil {
@@ -50,6 +60,8 @@ func Delete(key string) error {
 	return c.Delete(key)
 }
 
+// ListKeys returns a slice of all keys that begin with the provided prefix.
+// They are sorted in lexicographic order.
 func ListKeys(prefix string) ([]string, error) {
 	c, err := getClient()
 	if err != nil {

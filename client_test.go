@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -57,4 +58,13 @@ func TestReader(t *testing.T) {
 
 	err = c.Delete(prefix + "test")
 	assert.NoError(t, err)
+}
+
+func ExampleClient() {
+	c, _ := NewClient()
+
+	c.Set("key", "value")
+	val, _ := c.Get("key")
+	fmt.Println(val)
+	// Output: value
 }
