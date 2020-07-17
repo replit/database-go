@@ -17,6 +17,7 @@ func main() {
   database.Set("key", "value")
   val, _ := database.Get("key")
   fmt.Println(val)
+  // Output: value
 }
 ```
 
