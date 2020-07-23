@@ -18,7 +18,11 @@ func setDBURL(t *testing.T) {
 		req, err := http.NewRequest("GET", "https://database-test-jwt.kochman.repl.co", nil)
 		assert.NoError(t, err)
 
-		req.SetBasicAuth("test", os.Getenv("PASSWORD"))
+		pass, ok := os.LookupEnv("PASSWORD")
+		if !ok {
+			panic("please set PASSWORD env var")
+		}
+		req.SetBasicAuth("test", pass)
 		resp, err := http.DefaultClient.Do(req)
 		assert.NoError(t, err)
 		assert.Equal(t, 200, resp.StatusCode)
