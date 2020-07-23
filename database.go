@@ -7,19 +7,19 @@ import (
 )
 
 var defaultClient = struct {
-	sync.RWMutex
+	sync.Mutex
 	c *client
 	o sync.Once
 }{}
 
 func getClient() (*client, error) {
+	defaultClient.Lock()
+	defer defaultClient.Unlock()
 	if defaultClient.c == nil {
 		c, err := newClient()
 		if err != nil {
 			return nil, err
 		}
-
-		// TODO: we need some locking here
 		defaultClient.c = c
 	}
 	return defaultClient.c, nil
