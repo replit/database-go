@@ -11,7 +11,7 @@ import (
 func TestJSON(t *testing.T) {
 	t.Parallel()
 	setDBURL(t)
-	const prefix = "test-json-"
+	const prefix = "test-1-json-"
 
 	c, err := newClient()
 	assert.NoError(t, err)
@@ -37,7 +37,7 @@ func TestJSON(t *testing.T) {
 func TestReader(t *testing.T) {
 	t.Parallel()
 	setDBURL(t)
-	const prefix = "test-reader-"
+	const prefix = "test-2-reader-"
 
 	c, err := newClient()
 	assert.NoError(t, err)
@@ -57,6 +57,56 @@ func TestReader(t *testing.T) {
 	assert.Equal(t, "value", string(b))
 
 	err = c.Delete(prefix + "test")
+	assert.NoError(t, err)
+}
+
+func TestListKeys(t *testing.T) {
+	t.Parallel()
+	setDBURL(t)
+	const prefix = "test-3-list-keys-"
+
+	c, err := newClient()
+	assert.NoError(t, err)
+	assert.NotNil(t, c)
+
+	keys, err := c.ListKeys(prefix)
+	assert.NoError(t, err)
+	assert.Empty(t, keys)
+
+	const key = prefix + "test"
+	err = c.Set(key, "value")
+	assert.NoError(t, err)
+
+	keys, err = c.ListKeys(prefix)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{key}, keys)
+
+	err = c.Delete(key)
+	assert.NoError(t, err)
+}
+
+func TestListKeysEncoding(t *testing.T) {
+	t.Parallel()
+	setDBURL(t)
+	const prefix = "test-4-list-keys-encoding-"
+
+	c, err := newClient()
+	assert.NoError(t, err)
+	assert.NotNil(t, c)
+
+	keys, err := c.ListKeys(prefix)
+	assert.NoError(t, err)
+	assert.Empty(t, keys)
+
+	const key = prefix + "\n"
+	err = c.Set(key, "value")
+	assert.NoError(t, err)
+
+	keys, err = c.ListKeys(prefix)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{key}, keys)
+
+	err = c.Delete(key)
 	assert.NoError(t, err)
 }
 
