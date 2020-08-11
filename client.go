@@ -1,6 +1,7 @@
 package database
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -162,38 +163,47 @@ func (c *client) Delete(k string) error {
 // returns an empty slice if no keys match. The returned keys are sorted in
 // lexicographic (string) order.
 func (c *client) ListKeys(prefix string) ([]string, error) {
-	rel := &url.URL{Path: c.baseURL.Path, RawQuery: "prefix=" + prefix}
-	url := c.baseURL.ResolveReference(rel).String()
+	v := url.Values{
+		"prefix": []string{prefix},
+		"encode": []string{"true"},
+	}
+	rel := &url.URL{Path: c.baseURL.Path, RawQuery: v.Encode()}
+	endpoint := c.baseURL.ResolveReference(rel).String()
 
-	var keys []string
-
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
-		return keys, err
+		return nil, err
 	}
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return keys, err
+		return nil, err
 	}
-
-	reader, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return keys, fmt.Errorf(resp.Status)
-	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode > 299 {
-		defer resp.Body.Close()
-
-		return keys, fmt.Errorf(resp.Status, string(reader))
+		reader, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf(resp.Status)
+		}
+		return nil, fmt.Errorf(resp.Status, string(reader))
 	}
 
-	strRes := string(reader)
-	if len(strRes) > 0 {
-		keys = strings.Split(strRes, "\n")
+	// shake off that URL encoding
+	decoded := []string{}
+	s := bufio.NewScanner(resp.Body)
+	for s.Scan() {
+		d, err := url.QueryUnescape(s.Text())
+		if err != nil {
+			return nil, err
+		}
+		decoded = append(decoded, d)
+	}
+	if err := s.Err(); err != nil {
+		return nil, err
 	}
 
-	return keys, nil
+	return decoded, nil
 }
 
 // newClient returns a Client configured to use the database that is associated
