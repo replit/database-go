@@ -1,0 +1,20 @@
+version: v1.0
+name: database-go
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+blocks:
+  - name: Test
+    task:
+      jobs:
+        - name: make test
+          commands:
+            - sem-version go 1.14
+            - export GO111MODULE=on
+            - export GOPATH=~/go
+            - 'export PATH=/home/semaphore/go/bin:$PATH'
+            - checkout
+            - make test
+      secrets:
+        - name: Repl.it Database
