@@ -36,6 +36,18 @@ func Get(key string) (string, error) {
 	return c.Get(key)
 }
 
+// GetJSON retrieves the JSON string data for the provided key, deserializes it
+// and saves it to value pointed to by `value`.
+// It returns ErrNotFound if the key does not exist.
+func GetJSON(key string, value interface{}) error {
+	c, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	return c.GetJSON(key, value)
+}
+
 // Set creates or updates the provided key with the provided value.
 func Set(key, value string) error {
 	c, err := getClient()
@@ -44,6 +56,17 @@ func Set(key, value string) error {
 	}
 
 	return c.Set(key, value)
+}
+
+// SetJSON creates or updates the provided key with the JSON serialization of
+// the provided value.
+func SetJSON(key string, value interface{}) error {
+	c, err := getClient()
+	if err != nil {
+		return err
+	}
+
+	return c.SetJSON(key, value)
 }
 
 // Delete removes the provided key.

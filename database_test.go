@@ -54,6 +54,31 @@ func TestSingleton(t *testing.T) {
 	_, err = Get(prefix + "test")
 	assert.Equal(t, ErrNotFound, err)
 
+	// testing JSON
+	mapValue := map[string]int{
+		"one": 1,
+		"two": 2,
+	}
+
+	err = SetJSON(prefix+"test", mapValue)
+	assert.NoError(t, err)
+
+	val, err = Get(prefix + "test")
+	assert.NoError(t, err)
+	assert.Equal(t, `{"one":1,"two":2}`, val)
+
+	decoded := make(map[string]int)
+
+	err = GetJSON(prefix+"test", &decoded)
+	assert.NoError(t, err)
+	assert.Equal(t, mapValue, decoded)
+
+	err = Delete(prefix + "test")
+	assert.NoError(t, err)
+
+	err = GetJSON(prefix+"test", decoded)
+	assert.Equal(t, ErrNotFound, err)
+
 	// listing keys
 	for i := 0; i < 50; i++ {
 		err = Set(fmt.Sprintf("%stest-%02d", prefix, i), "value")
