@@ -17,4 +17,4 @@ blocks:
             - checkout
             - make test
       secrets:
-        - name: Repl.it Database
+        - name: replit-database
