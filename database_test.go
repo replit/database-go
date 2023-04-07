@@ -15,6 +15,34 @@ var setup sync.Once
 
 func setDBURL(t *testing.T) {
 	setup.Do(func() {
+		_, ok := os.LookupEnv("USE_FILE")
+		if ok {
+			fmt.Println("using file for db url")
+			req, err := http.NewRequest("GET", "https://database-test-ridt.util.repl.co", nil)
+			assert.NoError(t, err)
+
+			pass, ok := os.LookupEnv("RIDT_PASSWORD")
+			if !ok {
+				panic("please set RIDT_PASSWORD env var")
+			}
+			req.SetBasicAuth("test", pass)
+			resp, err := http.DefaultClient.Do(req)
+			assert.NoError(t, err)
+			assert.Equal(t, 200, resp.StatusCode)
+			defer resp.Body.Close()
+
+			b, err := ioutil.ReadAll(resp.Body)
+			assert.NoError(t, err)
+
+			// write to /tmp/replitdb
+			err = os.MkdirAll("tmp", 0755)
+
+			err = ioutil.WriteFile(replitDBURLFile, b, 0644)
+
+			assert.NoError(t, err)
+			return
+		}
+
 		req, err := http.NewRequest("GET", "https://database-test-jwt.util.repl.co", nil)
 		assert.NoError(t, err)
 
