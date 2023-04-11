@@ -14,6 +14,10 @@ import (
 	"time"
 )
 
+const (
+	replitDBURLFile = "/tmp/replitdb"
+)
+
 // ErrNotFound indicates that the requested key does not exist.
 var ErrNotFound = errors.New("not found")
 
@@ -208,8 +212,18 @@ func (c *client) ListKeys(prefix string) ([]string, error) {
 
 // newClient returns a Client configured to use the database that is associated
 // with the repl that it is running within. It does this by reading
-// REPLIT_DB_URL from the environment.
+// 1. the /tmp/replitdb file if it exists, or
+// 2. the REPLIT_DB_URL environment variable.
 func newClient() (*client, error) {
+	// check for the file first
+	if _, err := os.Stat(replitDBURLFile); err == nil {
+		b, err := ioutil.ReadFile(replitDBURLFile)
+		if err != nil {
+			return nil, err
+		}
+		return newClientWithCustomURL(string(b))
+	}
+
 	urlStr, ok := os.LookupEnv("REPLIT_DB_URL")
 	if !ok {
 		return nil, fmt.Errorf("REPLIT_DB_URL not set in environment")
