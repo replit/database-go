@@ -15,7 +15,7 @@ var setup sync.Once
 
 func setDBURL(t *testing.T) {
 	setup.Do(func() {
-		_, ok := os.LookupEnv("USE_FILE")
+		_, ok := os.LookupEnv("RIDT_DB")
 		if ok {
 			fmt.Println("using file for db url")
 			req, err := http.NewRequest("GET", "https://database-test-ridt.util.repl.co", nil)

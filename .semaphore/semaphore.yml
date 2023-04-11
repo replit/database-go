@@ -8,7 +8,7 @@ blocks:
   - name: Test
     task:
       jobs:
-        - name: make test
+        - name: Test (JWT)
           commands:
             - sem-version go 1.14
             - export GO111MODULE=on
@@ -16,5 +16,13 @@ blocks:
             - 'export PATH=/home/semaphore/go/bin:$PATH'
             - checkout
             - make test
+        - name: Test (RIDT)
+          commands:
+            - sem-version go 1.14
+            - export GO111MODULE=on
+            - export GOPATH=~/go
+            - 'export PATH=/home/semaphore/go/bin:$PATH'
+            - checkout
+            - RIDT_DB=1 make test
       secrets:
         - name: replit-database
