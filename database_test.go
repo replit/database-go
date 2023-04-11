@@ -15,10 +15,10 @@ var setup sync.Once
 
 func setDBURL(t *testing.T) {
 	setup.Do(func() {
-		req, err := http.NewRequest("GET", "https://database-test-jwt.kochman.repl.co", nil)
+		req, err := http.NewRequest("GET", "https://database-test-jwt.util.repl.co", nil)
 		assert.NoError(t, err)
 
-		pass, ok := os.LookupEnv("PASSWORD")
+		pass, ok := os.LookupEnv("JWT_PASSWORD")
 		if !ok {
 			panic("please set PASSWORD env var")
 		}
