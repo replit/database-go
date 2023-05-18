@@ -242,6 +242,7 @@ func newClientWithCustomURL(urlStr string) (*client, error) {
 			Timeout: 10 * time.Second,
 		},
 		baseURL: u,
+        creationTime: time.Now(),
 	}
 
 	return c, nil
