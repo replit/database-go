@@ -4,23 +4,35 @@ package database
 
 import (
 	"sync"
+	"time"
 )
 
 var defaultClient = struct {
 	sync.Mutex
-	c *client
-	o sync.Once
+	c            *client
+	o            sync.Once
+	creationTime time.Time
 }{}
+
+const (
+	refreshInterval = 1 * time.Hour
+)
 
 func getClient() (*client, error) {
 	defaultClient.Lock()
 	defer defaultClient.Unlock()
+	// if the client hasn't been updated in 1h, refresh it
+	if time.Since(defaultClient.creationTime) >= refreshInterval {
+		defaultClient.c = nil
+	}
+
 	if defaultClient.c == nil {
 		c, err := newClient()
 		if err != nil {
 			return nil, err
 		}
 		defaultClient.c = c
+		defaultClient.creationTime = time.Now()
 	}
 	return defaultClient.c, nil
 }
