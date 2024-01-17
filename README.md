@@ -3,7 +3,7 @@
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/replit/database-go)](https://pkg.go.dev/github.com/replit/database-go)
 
 The easiest way to use Repl.it Database from your Go repls.
-[Try it out on Repl.it!](https://repl.it/@kochman/Database-Go-example)
+[Try it out on Repl.it!](https://replit.com/@replit/Database-Go-example)
 
 ```
 package main

@@ -18,7 +18,7 @@ func setDBURL(t *testing.T) {
 		_, ok := os.LookupEnv("RIDT_DB")
 		if ok {
 			fmt.Println("using file for db url")
-			req, err := http.NewRequest("GET", "https://database-test-ridt.util.repl.co", nil)
+			req, err := http.NewRequest("GET", "https://database-test-ridt-util.replit.app", nil)
 			assert.NoError(t, err)
 
 			pass, ok := os.LookupEnv("RIDT_PASSWORD")
@@ -43,12 +43,12 @@ func setDBURL(t *testing.T) {
 			return
 		}
 
-		req, err := http.NewRequest("GET", "https://database-test-jwt.util.repl.co", nil)
+		req, err := http.NewRequest("GET", "https://database-test-jwt-util.replit.app", nil)
 		assert.NoError(t, err)
 
 		pass, ok := os.LookupEnv("JWT_PASSWORD")
 		if !ok {
-			panic("please set PASSWORD env var")
+			panic("please set JWT_PASSWORD env var")
 		}
 		req.SetBasicAuth("test", pass)
 		resp, err := http.DefaultClient.Do(req)
