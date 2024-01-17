@@ -48,7 +48,7 @@ func setDBURL(t *testing.T) {
 
 		pass, ok := os.LookupEnv("JWT_PASSWORD")
 		if !ok {
-			panic("please set PASSWORD env var")
+			panic("please set JWT_PASSWORD env var")
 		}
 		req.SetBasicAuth("test", pass)
 		resp, err := http.DefaultClient.Do(req)
