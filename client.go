@@ -45,8 +45,9 @@ func (c *client) Get(k string) (string, error) {
 	return string(reader), nil
 }
 
-// GetJSON creates or updates the provided key with the JSON serialization of
-// the provided value.
+// GetJSON retrieves the JSON string data for the provided key, deserializes it
+// and saves it to the value pointed to by `value`.
+// It returns ErrNotFound if the key does not exist.
 func (c *client) GetJSON(k string, v interface{}) error {
 	body, err := c.GetReader(k)
 	if err != nil {
